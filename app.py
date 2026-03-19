@@ -1,6 +1,8 @@
 import streamlit as st
 
-# --- PAGE SETUP ---
+# =========================
+# PAGE SETUP
+# =========================
 st.set_page_config(page_title="Leather Line Challenge", layout="wide")
 
 st.title("🧪 Leather Line Challenge")
@@ -18,15 +20,24 @@ Your decisions will affect:
 Make the right calls at each stage.
 """)
 
-# --- STATE INITIALISATION ---
-if "score" not in st.session_state:
-    st.session_state.score = 0
-    st.session_state.moisture = 50
-    st.session_state.softness = 50
-    st.session_state.grain = 50
-    st.session_state.structure = 50
+# =========================
+# SAFE SESSION STATE INIT
+# =========================
+defaults = {
+    "score": 0,
+    "moisture": 50,
+    "softness": 50,
+    "grain": 50,
+    "structure": 50
+}
 
-# --- SIDEBAR: PRODUCT TARGET ---
+for key, value in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = value
+
+# =========================
+# SIDEBAR — PRODUCT TYPE
+# =========================
 st.sidebar.header("🎯 Production Target")
 
 product = st.sidebar.selectbox(
@@ -34,7 +45,9 @@ product = st.sidebar.selectbox(
     ["Upholstery", "Shoe Upper", "Garment"]
 )
 
-# --- HELPER FUNCTION ---
+# =========================
+# HELPER FUNCTION
+# =========================
 def update_state(choice, correct, effects):
     if choice == correct:
         st.success("✅ Good decision")
@@ -43,7 +56,6 @@ def update_state(choice, correct, effects):
         st.error("❌ Not ideal")
         st.session_state.score -= 5
 
-    # Apply effects
     for key, value in effects.items():
         st.session_state[key] += value
 
@@ -55,7 +67,8 @@ st.subheader("Stage 1 — Conditioning")
 
 q1 = st.radio(
     "Leather feels slightly firm after drying:",
-    ["Send to staking", "Condition leather", "Dry further", "Send to finishing"]
+    ["Send to staking", "Condition leather", "Dry further", "Send to finishing"],
+    key="q1"
 )
 
 if st.button("Submit Stage 1"):
@@ -73,7 +86,8 @@ st.subheader("Stage 2 — Staking")
 
 q2 = st.radio(
     "Leather is conditioned. What next?",
-    ["Increase temperature only", "Stake correctly", "Dry drum immediately", "Send to finishing"]
+    ["Increase temperature only", "Stake correctly", "Dry drum immediately", "Send to finishing"],
+    key="q2"
 )
 
 if st.button("Submit Stage 2"):
@@ -91,7 +105,8 @@ st.subheader("Stage 3 — Softness Assessment")
 
 q3 = st.radio(
     "Leather is soft but uneven:",
-    ["Ignore", "Re-condition and re-stake", "Send to finishing", "Dry further"]
+    ["Ignore", "Re-condition and re-stake", "Send to finishing", "Dry further"],
+    key="q3"
 )
 
 if st.button("Submit Stage 3"):
@@ -108,8 +123,9 @@ if st.button("Submit Stage 3"):
 st.subheader("Stage 4 — Dry Drumming")
 
 q4 = st.radio(
-    "Target: " + product,
-    ["Skip drumming", "Light drumming", "Controlled dry drumming", "Heavy drying"]
+    f"Target: {product}",
+    ["Skip drumming", "Light drumming", "Controlled dry drumming", "Heavy drying"],
+    key="q4"
 )
 
 correct_q4 = "Controlled dry drumming" if product != "Shoe Upper" else "Light drumming"
@@ -129,7 +145,8 @@ st.subheader("Stage 5 — Grain Assessment")
 
 q5 = st.radio(
     "Pebble visible but slightly loose:",
-    ["Continue drumming", "Reduce and stabilise", "Add moisture", "Send to finishing"]
+    ["Continue drumming", "Reduce and stabilise", "Add moisture", "Send to finishing"],
+    key="q5"
 )
 
 if st.button("Submit Stage 5"):
@@ -147,7 +164,8 @@ st.subheader("Stage 6 — Final Preparation")
 
 q6 = st.radio(
     "Leather is balanced and ready:",
-    ["Send to finishing", "Toggle dry", "Re-stake", "Drum again"]
+    ["Send to finishing", "Toggle dry", "Re-stake", "Drum again"],
+    key="q6"
 )
 
 if st.button("Submit Stage 6"):
@@ -159,14 +177,14 @@ if st.button("Submit Stage 6"):
 
 
 # =========================
-# RESULTS SECTION
+# RESULTS
 # =========================
 st.write("---")
 st.header("🔬 Analytical Lab Report")
 
 col1, col2 = st.columns(2)
 
-# --- Lab Analysis ---
+# --- LAB ANALYSIS ---
 with col1:
     st.markdown("### Fibre Structure")
     if st.session_state.structure > 70:
@@ -193,7 +211,7 @@ with col1:
         st.error("Loose or uneven grain")
 
 
-# --- Feedback ---
+# --- FACTORY FEEDBACK ---
 with col2:
     st.markdown("### Factory Feedback")
 
@@ -226,15 +244,26 @@ with col2:
 
 
 # =========================
+# PROCESS INSIGHT
+# =========================
+st.write("---")
+st.subheader("🔬 Process Insight")
+
+if st.session_state.structure > 70:
+    st.success("Fibre structure well opened and supported")
+elif st.session_state.structure > 40:
+    st.warning("Some inconsistency in fibre structure")
+else:
+    st.error("Poor fibre control — risk of loose grain")
+
+
+# =========================
 # RESET BUTTON
 # =========================
 st.write("---")
 
 if st.button("🔄 Restart Simulation"):
-    st.session_state.score = 0
-    st.session_state.moisture = 50
-    st.session_state.softness = 50
-    st.session_state.grain = 50
-    st.session_state.structure = 50
+    for key, value in defaults.items():
+        st.session_state[key] = value
 
 st.write("💡 Every decision affects the final leather.")
